@@ -46,6 +46,22 @@ jobs:
           chmod 600 rsa_key.p8
           echo "SNOWFLAKE_PRIVATE_KEY_PATH=rsa_key.p8" >> $GITHUB_ENV
 
+      - name: Generate Snowflake config
+        run: |
+          cat > config.toml <<EOF
+          default_connection_name = "data_eng_snowie"
+
+          [connections.data_eng_snowie]
+          account = "${SNOWFLAKE_ACCOUNT}"
+          user = "${SNOWFLAKE_USER}"
+          authenticator = "SNOWFLAKE_JWT"
+          private_key_path = "${SNOWFLAKE_PRIVATE_KEY_PATH}"
+          role = "${SNOWFLAKE_ROLE}"
+          warehouse = "${SNOWFLAKE_WAREHOUSE}"
+          database = "${SNOWFLAKE_DATABASE}"
+          schema = "${SNOWFLAKE_SCHEMA}"
+          EOF
+
       - name: Install SnowflakeCLI
         uses: snowflakedb/snowflake-cli-action@v1.5
         with:
