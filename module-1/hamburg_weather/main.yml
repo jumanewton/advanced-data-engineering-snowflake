@@ -3,13 +3,9 @@ name: Deploy Templatized Data Environment
 on:
   pull_request:
     types: [closed]
-    branches:
-      - staging
-      - main
+    branches: [staging, main]
   push:
-    branches:
-      - staging
-      - main
+    branches: [staging, main]
 
 jobs:
   deploy_data_environment:
