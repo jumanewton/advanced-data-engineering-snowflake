@@ -62,10 +62,8 @@ jobs:
           schema = "${SNOWFLAKE_SCHEMA}"
           EOF
 
-      - name: Install SnowflakeCLI
-        uses: snowflakedb/snowflake-cli-action@v1.5
-        with:
-          cli-version: "latest"
+      - name: Install Snowflake CLI
+        run: pipx install snowflake-cli-labs
 
       - name: Fetch latest changes to Snowflake
         run: snow git fetch course_repo.public.advanced_data_engineering_snowflake --connection data_eng_snowie
