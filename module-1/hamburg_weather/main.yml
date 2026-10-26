@@ -62,15 +62,18 @@ jobs:
           schema = "${SNOWFLAKE_SCHEMA}"
           EOF
 
+      - name: Debug config
+        run: cat config.toml
+
       - name: Install Snowflake CLI
         run: pipx install snowflake-cli-labs
 
       - name: Fetch latest changes to Snowflake
-        run: snow git fetch course_repo.public.advanced_data_engineering_snowflake --connection data_eng_snowie
+        run: snow --config-file config.toml git fetch course_repo.public.advanced_data_engineering_snowflake --connection data_eng_snowie
 
       - name: Deploy templates to data environment
         run: |
           echo "Using branch: ${GITHUB_REF_NAME}"
-          snow git execute @advanced_data_engineering_snowflake/branches/${GITHUB_REF_NAME}/module-1/hamburg_weather/pipeline/data/ \
+          snow --config-file config.toml git execute @advanced_data_engineering_snowflake/branches/${GITHUB_REF_NAME}/module-1/hamburg_weather/pipeline/data/ \
             -D "env='${{ env.DEPLOY_ENV }}'" \
             --connection data_eng_snowie
