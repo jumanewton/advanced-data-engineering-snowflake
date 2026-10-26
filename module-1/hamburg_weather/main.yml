@@ -31,8 +31,10 @@ jobs:
           TARGET_BRANCH="${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}"
           if [[ $TARGET_BRANCH == "staging" ]]; then
             echo "DEPLOY_ENV=staging" >> $GITHUB_ENV
+            echo "Environment set to staging"
           elif [[ $TARGET_BRANCH == "main" ]]; then
             echo "DEPLOY_ENV=prod" >> $GITHUB_ENV
+            echo "Environment set to production"
           else
             echo "Unexpected branch: $TARGET_BRANCH"
             exit 1
@@ -44,17 +46,34 @@ jobs:
           chmod 600 rsa_key.p8
           echo "SNOWFLAKE_PRIVATE_KEY_PATH=rsa_key.p8" >> $GITHUB_ENV
 
-      - name: Install SnowflakeCLI
-        uses: snowflakedb/snowflake-cli-action@v1.5
-        with:
-          cli-version: "latest"
-          default-config-file-path: "config.toml"
+      - name: Generate Snowflake config
+        run: |
+          cat > config.toml <<EOF
+          default_connection_name = "data_eng_snowie"
+
+          [connections.data_eng_snowie]
+          account = "${SNOWFLAKE_ACCOUNT}"
+          user = "${SNOWFLAKE_USER}"
+          authenticator = "SNOWFLAKE_JWT"
+          private_key_path = "${SNOWFLAKE_PRIVATE_KEY_PATH}"
+          role = "${SNOWFLAKE_ROLE}"
+          warehouse = "${SNOWFLAKE_WAREHOUSE}"
+          database = "${SNOWFLAKE_DATABASE}"
+          schema = "${SNOWFLAKE_SCHEMA}"
+          EOF
+
+      - name: Debug config
+        run: cat config.toml
+
+      - name: Install Snowflake CLI
+        run: pipx install snowflake-cli-labs
 
       - name: Fetch latest changes to Snowflake
-        run: snow git fetch course_repo.public.advanced_data_engineering_snowflake --connection data_eng_snowie
+        run: snow --config-file config.toml git fetch course_repo.public.advanced_data_engineering_snowflake --connection data_eng_snowie
 
       - name: Deploy templates to data environment
         run: |
-          snow git execute @advanced_data_engineering_snowflake/branches/${GITHUB_REF_NAME}/module-1/hamburg_weather/pipeline/data/ \
+          echo "Using branch: ${GITHUB_REF_NAME}"
+          snow --config-file config.toml git execute @advanced_data_engineering_snowflake/branches/${GITHUB_REF_NAME}/module-1/hamburg_weather/pipeline/data/ \
             -D "env='${{ env.DEPLOY_ENV }}'" \
             --connection data_eng_snowie

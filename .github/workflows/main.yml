@@ -18,15 +18,29 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      # Read connection secret
-      SNOWFLAKE_CONNECTIONS_ADVANCED_DATA_ENGINEERING_SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
-      SNOWFLAKE_CONNECTIONS_ADVANCED_DATA_ENGINEERING_SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
-      SNOWFLAKE_CONNECTIONS_ADVANCED_DATA_ENGINEERING_SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+      # Override data_eng_snowie connection fields via Snowflake CLI env var mechanism:
+      # SNOWFLAKE_CONNECTIONS_<CONNECTION_NAME>_<FIELD> takes precedence over config.toml
+      SNOWFLAKE_CONNECTIONS_DATA_ENG_SNOWIE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_CONNECTIONS_DATA_ENG_SNOWIE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_CONNECTIONS_DATA_ENG_SNOWIE_AUTHENTICATOR: SNOWFLAKE_JWT
+      SNOWFLAKE_CONNECTIONS_DATA_ENG_SNOWIE_PRIVATE_KEY_PATH: /tmp/rsa_key.p8
+      SNOWFLAKE_CONNECTIONS_DATA_ENG_SNOWIE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+      SNOWFLAKE_CONNECTIONS_DATA_ENG_SNOWIE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+      SNOWFLAKE_CONNECTIONS_DATA_ENG_SNOWIE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+      SNOWFLAKE_CONNECTIONS_DATA_ENG_SNOWIE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
 
     steps:
       # Checkout step is necessary to access repository files
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      # Decode the base64-encoded private key from secrets to a temp file.
+      # Storing the key as base64 avoids newline/formatting issues with multi-line PEM keys.
+      # Path must match SNOWFLAKE_CONNECTIONS_DATA_ENG_SNOWIE_PRIVATE_KEY_PATH above.
+      - name: Set up Snowflake private key
+        run: |
+          echo "${{ secrets.SNOWFLAKE_PRIVATE_KEY_B64 }}" | base64 --decode > /tmp/rsa_key.p8
+          chmod 600 /tmp/rsa_key.p8
 
       # Determine environment based on target branch
       - name: Set environment
