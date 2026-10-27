@@ -340,15 +340,3 @@ FROM @{{env}}_tasty_bytes.public.s3load/raw_pos/subset_order_header/;
 -- order_detail table load
 COPY INTO {{env}}_tasty_bytes.raw_pos.order_detail
 FROM @{{env}}_tasty_bytes.public.s3load/raw_pos/subset_order_detail/;
-
-ALTER USER "newton.barasa" SET RSA_PUBLIC_KEY=$$
------BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjXiKBOl2JNMnX+kxhAC3
-rsCgGMXOUkrboVM501XStQ6GJrwV7tmSVAccttXt5aR+CJ/D3sdncSBXSmIgvD/+
-Yx6pjpn2BuabmgptnmnuQ7hbQ3ZXAFcyD42xsjHfDjENh0US9X94LkIMLSfUIhUk
-fEz3EKTC5KwZesgcBBQL4th0xaQhV/yPjtcEaSKDoOyT7RCMaBMpgaNrI1qFnoju
-4guJer1V2GfKN4QRuhl8YQPcIFxVYnWbNHkXntoYb7fXlbsLqQiGzH/HJEKtnOYT
-yAsZkRLIjP3uw3ZCKa9Y+nhjQJmvWp5rd60rEvByK8u1bd9LsQztM12lacQjnr+0
-qwIDAQAB
------END PUBLIC KEY-----
-$$;
